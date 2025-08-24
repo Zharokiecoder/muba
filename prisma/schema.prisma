@@ -3,75 +3,64 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
+
+
+
 
 model User {
   id         String   @id @default(cuid())
-  name       String?
   email      String   @unique
   password   String
-  role       Role
-  isApproved Boolean  @default(false)   // 👈 Admin approval for sellers
-  orders     Order[]                    // Buyer can have many orders
-  shops      Shop[]                     // Seller can own many shops
+  name       String
+  role       Role     @default(BUYER)
+  status     Status   @default(PENDING)
   createdAt  DateTime @default(now())
+  isApproved Boolean  @default(false)
   updatedAt  DateTime @updatedAt
+  orders     Order[]
+  shops      Shop[]
 }
 
 model Shop {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
-  owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   products  Product[]
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  owner     User      @relation(fields: [ownerId], references: [id])
 }
 
 model Product {
-  id          String       @id @default(cuid())
-  name        String
-  price       Float
-  shop        Shop         @relation(fields: [shopId], references: [id])
-  shopId      String
-  orderItems  OrderItem[]  // Product can appear in many order items
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  shopId    String
+  createdAt DateTime @default(now())
+  name      String
+  price     Float
+  updatedAt DateTime @updatedAt
+  shop      Shop     @relation(fields: [shopId], references: [id])
 }
 
 model Order {
-  id        String       @id @default(cuid())
-  buyer     User         @relation(fields: [buyerId], references: [id])
-  buyerId   String
-  shop      Shop         @relation(fields: [shopId], references: [id])
-  shopId    String
-  items     OrderItem[]
-  status    Status       @default(PENDING)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-}
-
-model OrderItem {
   id        String   @id @default(cuid())
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   String
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Int
+  buyerId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  buyer     User     @relation(fields: [buyerId], references: [id])
 }
 
 enum Role {
   BUYER
   SELLER
+  ADMIN
 }
 
 enum Status {
   PENDING
-  COMPLETED
-  CANCELLED
+  APPROVED
+  REJECTED
 }
