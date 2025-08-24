@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url       = env("DATABASE_URL")   // Use pooled for Prisma + app
+  directUrl = env("DIRECT_URL")     // Use direct if needed
 }
 
 model User {
@@ -20,6 +20,7 @@ model User {
   updatedAt  DateTime @updatedAt
   orders     Order[]
   shops      Shop[]
+  products   Product[] @relation("UserProducts")
 }
 
 model Shop {
@@ -33,13 +34,19 @@ model Shop {
 }
 
 model Product {
-  id        String   @id @default(cuid())
-  shopId    String
-  createdAt DateTime @default(now())
-  name      String
-  price     Float
-  updatedAt DateTime @updatedAt
-  shop      Shop     @relation(fields: [shopId], references: [id])
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int       @default(0)
+  image       String?
+  category    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  sellerId    String?
+  shopId      String?
+  seller      User?     @relation("UserProducts", fields: [sellerId], references: [id])
+  shop        Shop?     @relation(fields: [shopId], references: [id])
 }
 
 model Order {
