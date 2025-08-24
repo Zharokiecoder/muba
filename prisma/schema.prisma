@@ -8,9 +8,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
-
-
 model User {
   id         String   @id @default(cuid())
   email      String   @unique
@@ -51,6 +48,12 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   buyer     User     @relation(fields: [buyerId], references: [id])
+}
+
+model playing_with_neon {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value Float? @db.Real
 }
 
 enum Role {
